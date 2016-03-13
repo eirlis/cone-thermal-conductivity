@@ -106,21 +106,21 @@ public class ConeTC extends PApplet {
                 .setSize(200,40)
                 .setFont(font)
                 .setFocus(true)
-                .setColor(color(255,0,0))
+                .setColor(color(255,255,255))
         ;
         cp5.addTextfield("Top radius")
                 .setText("100")
                 .setPosition(20,170)
                 .setSize(200,40)
                 .setFont(font)
-                .setColor(color(255,0,0))
+                .setColor(color(255,255,255))
         ;
         cp5.addTextfield("Height")
                 .setText("300")
                 .setPosition(20,240)
                 .setSize(200,40)
                 .setFont(font)
-                .setColor(color(255,0,0))
+                .setColor(color(255,255,255))
         ;
         cp5.addLabel("Physical Characteristics: ")
                 .setPosition(20, 310)
@@ -130,24 +130,24 @@ public class ConeTC extends PApplet {
         ;
         cp5.addTextfield("Density")
                 .setText("300")
-                .setPosition(20,380)
+                .setPosition(20,360)
                 .setSize(200,40)
                 .setFont(font)
-                .setColor(color(255,0,0))
+                .setColor(color(255,255,255))
         ;
         cp5.addTextfield("Specific Heat Capacity")
                 .setText("300")
-                .setPosition(20,450)
+                .setPosition(20,430)
                 .setSize(200,40)
                 .setFont(font)
-                .setColor(color(255,0,0))
+                .setColor(color(255,255,255))
         ;
         cp5.addTextfield("Conductivity coefficient")
                 .setText("300")
-                .setPosition(20,520)
+                .setPosition(20,500)
                 .setSize(200,40)
                 .setFont(font)
-                .setColor(color(255,0,0))
+                .setColor(color(255,255,255))
         ;
 
         textFont(font);
@@ -172,8 +172,8 @@ public class ConeTC extends PApplet {
         // text(textValue, 360,180);
 
 //        background(0);
+
         lights();
-//
         noStroke();
         pushMatrix();
         translate(600, height*0.30f, -250);
@@ -201,18 +201,30 @@ public class ConeTC extends PApplet {
         println("a textfield event for controller 'input' : "+theText);
     }
 
+    private static int rgbToInt(int red, int green, int blue) {
+        int rgb = red;
+        rgb = (rgb << 8) + green;
+        rgb = (rgb << 8) + blue;
+        return rgb;
+    }
     @Override
     public void keyPressed() {
         if (key == CODED) {
             if (keyCode == UP)
-                rotationX += 0.1f;
-            if (keyCode == DOWN)
                 rotationX -= 0.1f;
+            if (keyCode == DOWN)
+                rotationX += 0.1f;
             if (keyCode == RIGHT)
-                rotationZ -= 0.1f;
+                rotationZ += 0.1f;
             if (keyCode == LEFT)
-                rotationZ += 0.1;
+                rotationZ -= 0.1f;
         }
+    }
+
+    @Override
+    public void mouseDragged() {
+        rotationX = rotationX + 0.01f * (mouseX - pmouseX);
+        rotationZ = rotationZ + 0.01f * (mouseY - pmouseY);
     }
 
     public static void main(String[] args) {
