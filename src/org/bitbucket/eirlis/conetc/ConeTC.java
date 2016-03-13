@@ -1,11 +1,27 @@
 package org.bitbucket.eirlis.conetc;
 
+import controlP5.ControlEvent;
+import controlP5.ControlP5;
 import processing.core.PApplet;
+import controlP5.Textfield;
+import processing.core.PFont;
 
 /**
  * Created by Elena on 13.03.2016.
  */
 public class ConeTC extends PApplet {
+    private float scaleX = 1, scaleY = 1;
+    private float rotationX = 0f;
+    private float rotationZ = 0f;
+    private ControlP5 cp5;
+    private String textValue = "";
+
+    private int bottomRadius = 100;
+    private int topRadius = 100;
+    private int coneHeight = 300;
+    private int ro;
+    private int c;
+    private int lambda;
 
     void cylinder(float bottom, float top, float h, int sides) {
         pushMatrix();
@@ -69,23 +85,138 @@ public class ConeTC extends PApplet {
 
     @Override
     public void settings() {
-        size(640, 360, "processing.opengl.PGraphics3D");
+        size(640, 600, "processing.opengl.PGraphics3D");
+    }
+
+    @Override
+    public void setup() {
+
+        PFont font = createFont("arial",20);
+
+        cp5 = new ControlP5(this);
+
+        cp5.addLabel("Geometric Characteristics: ")
+                .setPosition(20, 50)
+                .setSize(200, 40)
+                .setFont(font)
+                .setColor(color(255, 255, 255));
+        cp5.addTextfield("Bottom radius")
+                .setText("100")
+                .setPosition(20,100)
+                .setSize(200,40)
+                .setFont(font)
+                .setFocus(true)
+                .setColor(color(255,0,0))
+        ;
+        cp5.addTextfield("Top radius")
+                .setText("100")
+                .setPosition(20,170)
+                .setSize(200,40)
+                .setFont(font)
+                .setColor(color(255,0,0))
+        ;
+        cp5.addTextfield("Height")
+                .setText("300")
+                .setPosition(20,240)
+                .setSize(200,40)
+                .setFont(font)
+                .setColor(color(255,0,0))
+        ;
+        cp5.addLabel("Physical Characteristics: ")
+                .setPosition(20, 310)
+                .setSize(200, 40)
+                .setFont(font)
+                .setColor(color(255, 255, 255))
+        ;
+        cp5.addTextfield("Density")
+                .setText("300")
+                .setPosition(20,380)
+                .setSize(200,40)
+                .setFont(font)
+                .setColor(color(255,0,0))
+        ;
+        cp5.addTextfield("Specific Heat Capacity")
+                .setText("300")
+                .setPosition(20,450)
+                .setSize(200,40)
+                .setFont(font)
+                .setColor(color(255,0,0))
+        ;
+        cp5.addTextfield("Conductivity coefficient")
+                .setText("300")
+                .setPosition(20,520)
+                .setSize(200,40)
+                .setFont(font)
+                .setColor(color(255,0,0))
+        ;
+
+        textFont(font);
     }
 
     @Override
     public void draw() {
-        background(0);
-        lights();
 
+        background(0);
+        fill(255);
+        try {
+            bottomRadius = Integer.parseInt(cp5.get(Textfield.class, "Bottom radius").getText());
+            topRadius = Integer.parseInt(cp5.get(Textfield.class, "Top radius").getText());
+            coneHeight = Integer.parseInt(cp5.get(Textfield.class, "Height").getText());
+            ro = Integer.parseInt(cp5.get(Textfield.class, "Density").getText());
+            c = Integer.parseInt(cp5.get(Textfield.class, "Specific Heat Capacity").getText());
+            lambda = Integer.parseInt(cp5.get(Textfield.class, "Conductivity coefficient").getText());
+        } catch (NumberFormatException e) {
+
+        }
+        // text(cp5.get(Textfield.class,"Radius").getText(), 360,130);
+        // text(textValue, 360,180);
+
+//        background(0);
+        lights();
+//
         noStroke();
         pushMatrix();
-        translate(400, height*0.35f, -200);
-
-        cylinder(10, 80, 300, 200);
+        translate(600, height*0.30f, -250);
+        rotateX(rotationX);
+        rotateZ(rotationZ);
+        cylinder(bottomRadius, topRadius, coneHeight, 40);
         popMatrix();
+    }
+
+    public void clear() {
+        cp5.get(Textfield.class,"textValue").clear();
+    }
+
+    void controlEvent(ControlEvent theEvent) {
+        if(theEvent.isAssignableFrom(Textfield.class)) {
+            println("controlEvent: accessing a string from controller '"
+                    +theEvent.getName()+"': "
+                    +theEvent.getStringValue()
+            );
+        }
+    }
+
+    public void input(String theText) {
+        // automatically receives results from controller input
+        println("a textfield event for controller 'input' : "+theText);
+    }
+
+    @Override
+    public void keyPressed() {
+        if (key == CODED) {
+            if (keyCode == UP)
+                rotationX += 0.1f;
+            if (keyCode == DOWN)
+                rotationX -= 0.1f;
+            if (keyCode == RIGHT)
+                rotationZ -= 0.1f;
+            if (keyCode == LEFT)
+                rotationZ += 0.1;
+        }
     }
 
     public static void main(String[] args) {
         PApplet.main(new String[] { "org.bitbucket.eirlis.conetc.ConeTC" });
+        System.out.println("Hello");
     }
 }
