@@ -179,7 +179,7 @@ public class ConeTC extends PApplet {
         translate(600, height*0.30f, -250);
         rotateX(rotationX);
         rotateZ(rotationZ);
-        cylinder(bottomRadius, topRadius, coneHeight, 40);
+        cylinder(topRadius, bottomRadius, coneHeight, 40);
         popMatrix();
     }
 
