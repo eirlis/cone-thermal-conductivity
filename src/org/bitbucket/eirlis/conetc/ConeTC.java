@@ -182,6 +182,7 @@ public class ConeTC extends PApplet {
         cylinder(topRadius, bottomRadius, coneHeight, 40);
         popMatrix();
     }
+//тестовый комментарий для гита
 
     public void clear() {
         cp5.get(Textfield.class,"textValue").clear();
