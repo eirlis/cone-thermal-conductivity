@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Cone thermal conductivity.iml" filepath="$PROJECT_DIR$/Cone thermal conductivity.iml" />
+      <module fileurl="file://$PROJECT_DIR$/cone-thermal-conductivity.iml" filepath="$PROJECT_DIR$/cone-thermal-conductivity.iml" />
     </modules>
   </component>
 </project>

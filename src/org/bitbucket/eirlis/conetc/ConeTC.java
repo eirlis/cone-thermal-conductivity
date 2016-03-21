@@ -5,6 +5,7 @@ import controlP5.ControlP5;
 import processing.core.PApplet;
 import controlP5.Textfield;
 import processing.core.PFont;
+import processing.event.MouseEvent;
 
 /**
  * Created by Elena on 13.03.2016.
@@ -23,6 +24,14 @@ public class ConeTC extends PApplet {
     private int c;
     private int lambda;
 
+    private PositionManager _positionManager;
+    @Override
+    public void mouseWheel(MouseEvent event) {
+        super.mouseWheel(event);
+            final float k = 0.2f;
+            _positionManager.changeScale(-event.getCount() * k);
+    }
+
     void cylinder(float bottom, float top, float h, int sides) {
         pushMatrix();
 
@@ -31,7 +40,6 @@ public class ConeTC extends PApplet {
         float angle;
         float[] x = new float[sides+1];
         float[] z = new float[sides+1];
-
         float[] x2 = new float[sides+1];
         float[] z2 = new float[sides+1];
 
@@ -94,6 +102,9 @@ public class ConeTC extends PApplet {
         PFont font = createFont("arial",20);
 
         cp5 = new ControlP5(this);
+        _positionManager = new PositionManager(this);
+        _positionManager.setOffsetY(0.3f);
+        _positionManager.setScale(0.7f);
 
         cp5.addLabel("Geometric Characteristics: ")
                 .setPosition(20, 50)
@@ -176,9 +187,10 @@ public class ConeTC extends PApplet {
         lights();
         noStroke();
         pushMatrix();
-        translate(600, height*0.30f, -250);
-        rotateX(rotationX);
-        rotateZ(rotationZ);
+        _positionManager.draw();
+        //translate(600, height*0.30f, -250);
+//        rotateX(rotationX);
+//        rotateZ(rotationZ);
         cylinder(bottomRadius, topRadius, coneHeight, 40);
         popMatrix();
     }
@@ -223,8 +235,9 @@ public class ConeTC extends PApplet {
 
     @Override
     public void mouseDragged() {
-        rotationX = rotationX + 0.01f * (mouseX - pmouseX);
-        rotationZ = rotationZ + 0.01f * (mouseY - pmouseY);
+//        rotationX = rotationX + 0.01f * (mouseX - pmouseX);
+//        rotationZ = rotationZ + 0.01f * (mouseY - pmouseY);
+            _positionManager.setPositionByMouse();
     }
 
     public static void main(String[] args) {
