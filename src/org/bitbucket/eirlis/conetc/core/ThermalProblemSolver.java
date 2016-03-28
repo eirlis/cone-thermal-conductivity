@@ -6,7 +6,7 @@ import java.util.Arrays;
  * Created by Elena on 14.03.2016.
  */
 public class ThermalProblemSolver {
-    private static final int N = 200;
+    private static final int N = 100;
 
     /**
      * Рассчитывает поле температуры в определённый момент времени для цилиндра
@@ -42,7 +42,7 @@ public class ThermalProblemSolver {
                 double ai = 0.5 * lambda * (2 * i - 1) / (Math.pow(h, 2) * (i - 1));
                 double ci = 0.5 * lambda * (2 * i - 3) / (Math.pow(h, 2) * (i - 1));
                 double bi = ai + ci + ro * c / tau;
-                double fi = -ro * c * T[i] / tau;
+                double fi = -ro * c * T[i - 1] / tau;
 
                 alpha[i] = ai / (bi - ci * alpha[i - 1]);
                 beta[i] = (ci * beta[i - 1] - fi) / (bi - ci * alpha[i - 1]);

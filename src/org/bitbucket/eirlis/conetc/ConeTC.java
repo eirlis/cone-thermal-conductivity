@@ -1,16 +1,18 @@
 package org.bitbucket.eirlis.conetc;
 
-import controlP5.ControlEvent;
-import controlP5.ControlListener;
-import controlP5.ControlP5;
+import controlP5.*;
 import org.bitbucket.eirlis.conetc.core.ThermalProblemSolver;
 import org.bitbucket.eirlis.conetc.managers.PositionManager;
 import org.bitbucket.eirlis.conetc.render.FigureRenderer;
+import org.bitbucket.eirlis.conetc.render.Gradient;
 import org.omg.CORBA.DoubleHolder;
 import processing.core.PApplet;
-import controlP5.Textfield;
 import processing.core.PFont;
 import processing.event.MouseEvent;
+import sun.font.TextLabel;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by Elena on 13.03.2016.
@@ -23,7 +25,9 @@ public class ConeTC extends PApplet {
     private String textValue = "";
     private FigureRenderer mFigureRenderer = new FigureRenderer(this);
     private ThermalProblemSolver mThermalProblemSolver = new ThermalProblemSolver();
+    private Gradient gradient = new Gradient(this);
 
+    double[] temperatureField;
     private int bottomRadius = 100;
     private int topRadius = 100;
     private int coneHeight = 300;
@@ -32,6 +36,7 @@ public class ConeTC extends PApplet {
     private double lambda;
     private double T0;
     private double Th;
+    private double time;
 
     private PositionManager _positionManager;
     @Override
@@ -43,15 +48,27 @@ public class ConeTC extends PApplet {
 
     @Override
     public void settings() {
-        size(740, 800, "processing.opengl.PGraphics3D");
+        size(900, 800, "processing.opengl.PGraphics3D");
     }
 
     @Override
     public void setup() {
+        gradient.addColor(color(102, 0, 102));
+        gradient.addColor(color(0, 144, 255));
+        gradient.addColor(color(0, 255, 207));
+        gradient.addColor(color(51, 204, 102));
+        gradient.addColor(color(111, 255, 0));
+        gradient.addColor(color(191, 255, 0));
+        gradient.addColor(color(255, 240, 0));
+        gradient.addColor(color(255, 153, 102));
+        gradient.addColor(color(204, 51, 0));
+        gradient.addColor(color(153, 0, 0));
+
+
         PFont font = createFont("arial",20);
 
         cp5 = new ControlP5(this);
-        _positionManager = new PositionManager(this);
+        _positionManager = new PositionManager(this, 450, 200);
         _positionManager.setOffsetY(0.3f);
         _positionManager.setScale(0.7f);
 
@@ -89,64 +106,110 @@ public class ConeTC extends PApplet {
                 .setColor(color(255, 255, 255))
         ;
         cp5.addTextfield("Density")
-                .setText("300")
+                .setText("1500")
                 .setPosition(20,360)
                 .setSize(200,40)
                 .setFont(font)
                 .setColor(color(255,255,255))
         ;
         cp5.addTextfield("Specific Heat Capacity")
-                .setText("300")
+                .setText("750")
                 .setPosition(20,430)
                 .setSize(200,40)
                 .setFont(font)
                 .setColor(color(255,255,255))
         ;
         cp5.addTextfield("Conductivity coefficient")
-                .setText("300")
+                .setText("0.7")
                 .setPosition(20,500)
                 .setSize(200,40)
                 .setFont(font)
                 .setColor(color(255,255,255))
         ;
         cp5.addTextfield("Initial temperature")
-                .setText("300")
+                .setText("20")
                 .setPosition(20,570)
                 .setSize(200,40)
                 .setFont(font)
                 .setColor(color(255,255,255))
         ;
         cp5.addTextfield("Border temperature")
-                .setText("300")
+                .setText("50")
                 .setPosition(20,640)
                 .setSize(200,40)
                 .setFont(font)
                 .setColor(color(255,255,255))
         ;
+        cp5.addLabel("Time: ")
+                .setPosition(300, 500)
+                .setSize(200, 40)
+                .setFont(font)
+                .setColor(color(255, 255, 255))
+        ;
+        cp5.addTextfield("Time")
+                .setText("30")
+                .setPosition(300,570)
+                .setSize(200,40)
+                .setFont(font)
+                .setColor(color(255,255,255))
+        ;
+
+        List<Integer> colors = gradient.getColors();
+        for (int i = 0; i < colors.size(); i++) {
+            cp5.addLabel("Color" + i)
+                    .setPosition(700, 40 + i * 40)
+                    .setText("")
+                    .setSize(200, 40)
+                    .setFont(font)
+                    .setColor(color(255, 255, 255));
+        }
+
         cp5.addButton("Calculate")
                 .setPosition(20, 710)
                 .setSize(100, 40)
                 .addListener(new ControlListener() {
                     @Override
                     public void controlEvent(ControlEvent controlEvent) {
-                        double[] res = mThermalProblemSolver.currentTemperatureCylinder(
-                                 Math.max(bottomRadius, topRadius),
+                        temperatureField = mThermalProblemSolver.currentTemperatureCylinder(
+                                 Math.max(bottomRadius, topRadius) / 1000.0,
                                 lambda,
                                 ro,
                                 c,
                                 T0,
                                 Th,
-                                20
+                                time
                         );
+                        updateGradient();
                     }
                 });
 
         textFont(font);
     }
 
+    private void updateGradient() {
+        gradient.setMin(Math.min(T0, Th));
+        gradient.setMax(Math.max(T0, Th));
+        List<Integer> colors = gradient.getColors();
+        for (int i = 0; i < colors.size(); i++) {
+            Textlabel label = cp5.get(Textlabel.class, "Color" + i);
+            label.setText(Integer.toString((int)gradient.getColorValue(i)));
+        }
+    }
+
+    private void drawLegend() {
+        List<Integer> colors = gradient.getColors();
+        for (int i = 0; i < colors.size(); i++) {
+            fill(colors.get(i));
+            Textlabel label = cp5.get(Textlabel.class, "Color" + i);
+            float x, y;
+            x = label.getPosition()[0];
+            y = label.getPosition()[1];
+            rect(x - 30, y, label.getHeight(), label.getHeight());
+        }
+    }
+
     @Override
     public void draw() {
-
         background(0);
         fill(255);
         try {
@@ -158,10 +221,13 @@ public class ConeTC extends PApplet {
             lambda = Double.parseDouble(cp5.get(Textfield.class, "Conductivity coefficient").getText());
             T0 = Double.parseDouble(cp5.get(Textfield.class, "Initial temperature").getText());
             Th = Double.parseDouble(cp5.get(Textfield.class, "Border temperature").getText());
+            time = Double.parseDouble(cp5.get(Textfield.class, "Time").getText());
 
         } catch (NumberFormatException e) {
 
         }
+        if (temperatureField != null)
+            drawLegend();
         // text(cp5.get(Textfield.class,"Radius").getText(), 360,130);
         // text(textValue, 360,180);
 
@@ -174,19 +240,28 @@ public class ConeTC extends PApplet {
         //translate(600, height*0.30f, -250);
 //        rotateX(rotationX);
 //        rotateZ(rotationZ);
-        mFigureRenderer.tube(
-                bottomRadius / 2,
-                bottomRadius,
-                topRadius / 2,
-                topRadius,
-                coneHeight,
-                40
-        );
-        //mFigureRenderer.cylinder(bottomRadius, topRadius, coneHeight, 40);
-        fill(255, 0, 0);
-        mFigureRenderer.cylinder(bottomRadius / 2, topRadius / 2, coneHeight, 40);
+        if (temperatureField == null) {
+            gradient.setMax(50);
+            gradient.setMin(50);
+            fill(gradient.getGradient(25));
+            mFigureRenderer.cylinder(bottomRadius, topRadius, coneHeight, 40);
+        } else {
+            double radiusFactor = 1.0 / temperatureField.length;
+            for (int i = temperatureField.length - 1; i >= 0; i--) {
+                fill(gradient.getGradient(temperatureField[i]));
+                mFigureRenderer.tube(
+                        (float)(bottomRadius * radiusFactor * i),
+                        (float)(bottomRadius * radiusFactor * (i + 1)),
+                        (float)(topRadius * radiusFactor * i),
+                        (float)(topRadius * radiusFactor * (i + 1)),
+                        coneHeight,
+                        40
+                );
+            }
+        }
         popMatrix();
     }
+
 
     public void clear() {
         cp5.get(Textfield.class,"textValue").clear();

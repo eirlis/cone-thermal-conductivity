@@ -17,10 +17,13 @@ public class PositionManager {
     private float _goalScale = 0;
     private float _curScale = 0;
 
+    private float posX, posY;
     private final PApplet mParent;
 
-    public PositionManager(PApplet parent) {
+    public PositionManager(PApplet parent, float posX, float posY) {
         mParent = parent;
+        this.posX = posX;
+        this.posY = posY;
     }
 
     public PApplet getParent(){
@@ -48,7 +51,8 @@ public class PositionManager {
             _curScale -= diff / SPEED_POS;
         }
 
-        getParent().translate(getParent().width * 0.7f, _curY, 0.0f);
+        getParent().translate(posX, posY, 0);
+        //getParent().translate(getParent().width * 0.7f, _curY, 0.0f);
         getParent().rotateX(_curRotateY);
         getParent().rotateY(_curRotateX);
 
