@@ -6,7 +6,7 @@ import java.util.Arrays;
  * Created by Elena on 14.03.2016.
  */
 public class ThermalProblemSolver {
-    private static final int N = 2000;
+    private static final int N = 200;
 
     /**
      * Рассчитывает поле температуры в определённый момент времени для цилиндра
@@ -18,7 +18,11 @@ public class ThermalProblemSolver {
      * @param Th температура на границе
      * @param t время
      */
-    public double[] currentTemperatureCylinder(double radius, double lambda, double ro, double c, double T0, double Th, double t) {
+    public double[] currentTemperatureCylinder(
+            double radius,
+            double lambda,
+            double ro,
+            double c, double T0, double Th, double t) {
         double h = radius / (N - 1);
         double tau = t / 100.0;
         double[] T = new double[N];

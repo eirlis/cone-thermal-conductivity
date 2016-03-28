@@ -1,8 +1,12 @@
 package org.bitbucket.eirlis.conetc;
 
 import controlP5.ControlEvent;
+import controlP5.ControlListener;
 import controlP5.ControlP5;
+import org.bitbucket.eirlis.conetc.core.ThermalProblemSolver;
 import org.bitbucket.eirlis.conetc.managers.PositionManager;
+import org.bitbucket.eirlis.conetc.render.FigureRenderer;
+import org.omg.CORBA.DoubleHolder;
 import processing.core.PApplet;
 import controlP5.Textfield;
 import processing.core.PFont;
@@ -17,13 +21,17 @@ public class ConeTC extends PApplet {
     private float rotationZ = 0f;
     private ControlP5 cp5;
     private String textValue = "";
+    private FigureRenderer mFigureRenderer = new FigureRenderer(this);
+    private ThermalProblemSolver mThermalProblemSolver = new ThermalProblemSolver();
 
     private int bottomRadius = 100;
     private int topRadius = 100;
     private int coneHeight = 300;
-    private int ro;
-    private int c;
-    private int lambda;
+    private double ro;
+    private double c;
+    private double lambda;
+    private double T0;
+    private double Th;
 
     private PositionManager _positionManager;
     @Override
@@ -33,76 +41,9 @@ public class ConeTC extends PApplet {
             _positionManager.changeScale(-event.getCount() * k);
     }
 
-    void cylinder(float bottom, float top, float h, int sides) {
-        pushMatrix();
-
-        translate(0,h/2,0);
-
-        float angle;
-        float[] x = new float[(sides+1) * 3 / 4 + 2];
-        float[] z = new float[(sides+1) * 3 / 4 + 2];
-        float[] x2 = new float[(sides+1) * 3 / 4 + 2];
-        float[] z2 = new float[(sides+1) * 3 / 4 + 2];
-
-        //get the x and z position on a circle for all the sides
-        for(int i=0; i < x.length; i++){
-            angle = TWO_PI / (sides) * i;
-            x[i] = sin(angle) * bottom;
-            z[i] = cos(angle) * bottom;
-        }
-        x[x.length - 2] = 0;
-        z[z.length - 2] = 0;
-        x[x.length - 1] = x[0];
-        z[z.length - 1] = z[0];
-
-        for(int i=0; i < x.length; i++){
-            angle = TWO_PI / (sides) * i;
-            x2[i] = sin(angle) * top;
-            z2[i] = cos(angle) * top;
-        }
-        x2[x.length - 2] = 0;
-        z2[z.length - 2] = 0;
-        x2[x.length - 1] = x2[0];
-        z2[z.length - 1] = z2[0];
-
-        //draw the bottom of the cylinder
-        beginShape(TRIANGLE_FAN);
-
-        vertex(0,   -h/2,    0);
-
-        for(int i=0; i < x.length; i++){
-            vertex(x[i], -h/2, z[i]);
-        }
-
-        endShape();
-
-        //draw the center of the cylinder
-        beginShape(QUAD_STRIP);
-
-        for(int i=0; i < x.length; i++){
-            vertex(x[i], -h/2, z[i]);
-            vertex(x2[i], h/2, z2[i]);
-        }
-
-        endShape();
-
-        //draw the top of the cylinder
-        beginShape(TRIANGLE_FAN);
-
-        vertex(0,   h/2,    0);
-
-        for(int i=0; i < x.length; i++){
-            vertex(x2[i], h/2, z2[i]);
-        }
-
-        endShape();
-
-        popMatrix();
-    }
-
     @Override
     public void settings() {
-        size(640, 600, "processing.opengl.PGraphics3D");
+        size(740, 800, "processing.opengl.PGraphics3D");
     }
 
     @Override
@@ -168,6 +109,37 @@ public class ConeTC extends PApplet {
                 .setFont(font)
                 .setColor(color(255,255,255))
         ;
+        cp5.addTextfield("Initial temperature")
+                .setText("300")
+                .setPosition(20,570)
+                .setSize(200,40)
+                .setFont(font)
+                .setColor(color(255,255,255))
+        ;
+        cp5.addTextfield("Border temperature")
+                .setText("300")
+                .setPosition(20,640)
+                .setSize(200,40)
+                .setFont(font)
+                .setColor(color(255,255,255))
+        ;
+        cp5.addButton("Calculate")
+                .setPosition(20, 710)
+                .setSize(100, 40)
+                .addListener(new ControlListener() {
+                    @Override
+                    public void controlEvent(ControlEvent controlEvent) {
+                        double[] res = mThermalProblemSolver.currentTemperatureCylinder(
+                                 Math.max(bottomRadius, topRadius),
+                                lambda,
+                                ro,
+                                c,
+                                T0,
+                                Th,
+                                20
+                        );
+                    }
+                });
 
         textFont(font);
     }
@@ -181,9 +153,12 @@ public class ConeTC extends PApplet {
             bottomRadius = Integer.parseInt(cp5.get(Textfield.class, "Bottom radius").getText());
             topRadius = Integer.parseInt(cp5.get(Textfield.class, "Top radius").getText());
             coneHeight = Integer.parseInt(cp5.get(Textfield.class, "Height").getText());
-            ro = Integer.parseInt(cp5.get(Textfield.class, "Density").getText());
-            c = Integer.parseInt(cp5.get(Textfield.class, "Specific Heat Capacity").getText());
-            lambda = Integer.parseInt(cp5.get(Textfield.class, "Conductivity coefficient").getText());
+            ro = Double.parseDouble(cp5.get(Textfield.class, "Density").getText());
+            c = Double.parseDouble(cp5.get(Textfield.class, "Specific Heat Capacity").getText());
+            lambda = Double.parseDouble(cp5.get(Textfield.class, "Conductivity coefficient").getText());
+            T0 = Double.parseDouble(cp5.get(Textfield.class, "Initial temperature").getText());
+            Th = Double.parseDouble(cp5.get(Textfield.class, "Border temperature").getText());
+
         } catch (NumberFormatException e) {
 
         }
@@ -199,9 +174,17 @@ public class ConeTC extends PApplet {
         //translate(600, height*0.30f, -250);
 //        rotateX(rotationX);
 //        rotateZ(rotationZ);
-        cylinder(bottomRadius, topRadius, coneHeight, 40);
+        mFigureRenderer.tube(
+                bottomRadius / 2,
+                bottomRadius,
+                topRadius / 2,
+                topRadius,
+                coneHeight,
+                40
+        );
+        //mFigureRenderer.cylinder(bottomRadius, topRadius, coneHeight, 40);
         fill(255, 0, 0);
-        cylinder(bottomRadius / 2, topRadius / 2, coneHeight, 40);
+        mFigureRenderer.cylinder(bottomRadius / 2, topRadius / 2, coneHeight, 40);
         popMatrix();
     }
 
