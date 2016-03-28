@@ -39,10 +39,10 @@ public class ConeTC extends PApplet {
         translate(0,h/2,0);
 
         float angle;
-        float[] x = new float[sides+1];
-        float[] z = new float[sides+1];
-        float[] x2 = new float[sides+1];
-        float[] z2 = new float[sides+1];
+        float[] x = new float[(sides+1) * 3 / 4 + 2];
+        float[] z = new float[(sides+1) * 3 / 4 + 2];
+        float[] x2 = new float[(sides+1) * 3 / 4 + 2];
+        float[] z2 = new float[(sides+1) * 3 / 4 + 2];
 
         //get the x and z position on a circle for all the sides
         for(int i=0; i < x.length; i++){
@@ -50,12 +50,20 @@ public class ConeTC extends PApplet {
             x[i] = sin(angle) * bottom;
             z[i] = cos(angle) * bottom;
         }
+        x[x.length - 2] = 0;
+        z[z.length - 2] = 0;
+        x[x.length - 1] = x[0];
+        z[z.length - 1] = z[0];
 
         for(int i=0; i < x.length; i++){
             angle = TWO_PI / (sides) * i;
             x2[i] = sin(angle) * top;
             z2[i] = cos(angle) * top;
         }
+        x2[x.length - 2] = 0;
+        z2[z.length - 2] = 0;
+        x2[x.length - 1] = x2[0];
+        z2[z.length - 1] = z2[0];
 
         //draw the bottom of the cylinder
         beginShape(TRIANGLE_FAN);
@@ -192,6 +200,8 @@ public class ConeTC extends PApplet {
 //        rotateX(rotationX);
 //        rotateZ(rotationZ);
         cylinder(bottomRadius, topRadius, coneHeight, 40);
+        fill(255, 0, 0);
+        cylinder(bottomRadius / 2, topRadius / 2, coneHeight, 40);
         popMatrix();
     }
 
