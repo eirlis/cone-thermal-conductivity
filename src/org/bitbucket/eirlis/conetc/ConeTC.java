@@ -2,6 +2,7 @@ package org.bitbucket.eirlis.conetc;
 
 import controlP5.ControlEvent;
 import controlP5.ControlP5;
+import org.bitbucket.eirlis.conetc.managers.PositionManager;
 import processing.core.PApplet;
 import controlP5.Textfield;
 import processing.core.PFont;
@@ -98,7 +99,6 @@ public class ConeTC extends PApplet {
 
     @Override
     public void setup() {
-
         PFont font = createFont("arial",20);
 
         cp5 = new ControlP5(this);

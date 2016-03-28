@@ -1,4 +1,4 @@
-package org.bitbucket.eirlis.conetc;
+package org.bitbucket.eirlis.conetc.managers;
 
 import processing.core.PApplet;
 
