@@ -165,7 +165,7 @@ public class ConeTC extends PApplet {
         }
 
         cp5.addButton("Calculate")
-                .setPosition(20, 710)
+                .setPosition(300, 670)
                 .setSize(100, 40)
                 .addListener(new ControlListener() {
                     @Override
