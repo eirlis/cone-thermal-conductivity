@@ -6,7 +6,7 @@ import java.util.Arrays;
  * Created by Elena on 14.03.2016.
  */
 public class ThermalProblemSolver {
-    private static final int N = 100;
+    private static final int N = 50;
 
     /**
      * Рассчитывает поле температуры в определённый момент времени для цилиндра
@@ -67,10 +67,10 @@ public class ThermalProblemSolver {
                         750,
                         20,
                         50,
-                        5
+                        60
                 )
         ));
-        System.out.println(Arrays.toString(
+        /*System.out.println(Arrays.toString(
                 tps.currentTemperatureCylinder(
                         0.1,
                         0.7,
@@ -102,6 +102,6 @@ public class ThermalProblemSolver {
                         50,
                         3600
                 )
-        ));
+        ));*/
     }
 }

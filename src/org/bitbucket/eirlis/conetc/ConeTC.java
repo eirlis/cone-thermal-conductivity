@@ -246,22 +246,26 @@ public class ConeTC extends PApplet {
             fill(gradient.getGradient(25));
             mFigureRenderer.cylinder(bottomRadius, topRadius, coneHeight, 40);
         } else {
-            double radiusFactor = 1.0 / temperatureField.length;
-            for (int i = temperatureField.length - 1; i >= 0; i--) {
-                fill(gradient.getGradient(temperatureField[i]));
-                mFigureRenderer.tube(
-                        (float)(bottomRadius * radiusFactor * i),
-                        (float)(bottomRadius * radiusFactor * (i + 1)),
-                        (float)(topRadius * radiusFactor * i),
-                        (float)(topRadius * radiusFactor * (i + 1)),
-                        coneHeight,
-                        40
-                );
-            }
+            drawTemperatureCylinder();
         }
         popMatrix();
     }
+    
 
+    private void drawTemperatureCylinder() {
+        double radiusFactor = 1.0 / temperatureField.length;
+        for (int i = temperatureField.length - 1; i >= 0; i--) {
+            fill(gradient.getGradient(temperatureField[i]));
+            mFigureRenderer.tube(
+                    (float)(bottomRadius * radiusFactor * i),
+                    (float)(bottomRadius * radiusFactor * (i + 1)),
+                    (float)(topRadius * radiusFactor * i),
+                    (float)(topRadius * radiusFactor * (i + 1)),
+                    coneHeight,
+                    40
+            );
+        }
+    }
 
     public void clear() {
         cp5.get(Textfield.class,"textValue").clear();
