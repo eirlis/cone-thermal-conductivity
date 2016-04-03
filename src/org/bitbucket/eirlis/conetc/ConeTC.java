@@ -2,12 +2,14 @@ package org.bitbucket.eirlis.conetc;
 
 import controlP5.*;
 import org.bitbucket.eirlis.conetc.core.ThermalProblemSolver;
+import org.bitbucket.eirlis.conetc.core.TwoDimensionProblemSolver;
 import org.bitbucket.eirlis.conetc.managers.PositionManager;
 import org.bitbucket.eirlis.conetc.render.FigureRenderer;
 import org.bitbucket.eirlis.conetc.render.Gradient;
 import org.omg.CORBA.DoubleHolder;
 import processing.core.PApplet;
 import processing.core.PFont;
+import processing.event.KeyEvent;
 import processing.event.MouseEvent;
 import sun.font.TextLabel;
 
@@ -18,16 +20,17 @@ import java.util.List;
  * Created by Elena on 13.03.2016.
  */
 public class ConeTC extends PApplet {
+    private static final int NR = 100, NZ = 100;
     private float scaleX = 1, scaleY = 1;
     private float rotationX = 0f;
     private float rotationZ = 0f;
     private ControlP5 cp5;
     private String textValue = "";
     private FigureRenderer mFigureRenderer = new FigureRenderer(this);
-    private ThermalProblemSolver mThermalProblemSolver = new ThermalProblemSolver();
+    private TwoDimensionProblemSolver mThermalProblemSolver = new TwoDimensionProblemSolver(NR, NZ);
     private Gradient gradient = new Gradient(this);
 
-    double[] temperatureField;
+    double[][] temperatureField;
     private int bottomRadius = 100;
     private int topRadius = 100;
     private int coneHeight = 300;
@@ -63,7 +66,6 @@ public class ConeTC extends PApplet {
         gradient.addColor(color(255, 153, 102));
         gradient.addColor(color(204, 51, 0));
         gradient.addColor(color(153, 0, 0));
-
 
         PFont font = createFont("arial",20);
 
@@ -170,12 +172,15 @@ public class ConeTC extends PApplet {
                 .addListener(new ControlListener() {
                     @Override
                     public void controlEvent(ControlEvent controlEvent) {
-                        temperatureField = mThermalProblemSolver.currentTemperatureCylinder(
+                        temperatureField = mThermalProblemSolver.calculateTemperatureCylinder(
                                  Math.max(bottomRadius, topRadius) / 1000.0,
+                                height / 1000.0,
                                 lambda,
                                 ro,
                                 c,
                                 T0,
+                                Th,
+                                Th,
                                 Th,
                                 time
                         );
@@ -246,13 +251,37 @@ public class ConeTC extends PApplet {
             fill(gradient.getGradient(25));
             mFigureRenderer.cylinder(bottomRadius, topRadius, coneHeight, 40);
         } else {
+            // mFigureRenderer.textureCylinder(bottomRadius, coneHeight, loadImage("kotik.png"), 40);
             drawTemperatureCylinder();
+            noLoop();
         }
         popMatrix();
     }
-    
+
 
     private void drawTemperatureCylinder() {
+        double heightInc = (double) coneHeight / NZ;
+        double radiusFactor = 1.0 / NR;
+        for (int i = NZ - 1; i >= 0; i--) {
+            for (int j = NR - 1; j >= 0; j--) {
+                fill(gradient.getGradient(temperatureField[j][i]));
+                mFigureRenderer.tube(
+                        (float)(bottomRadius * radiusFactor * j),
+                        (float)(bottomRadius * radiusFactor * (j + 1)),
+                        (float)(topRadius * radiusFactor * j),
+                        (float)(topRadius * radiusFactor * (j + 1)),
+                        (float) heightInc,
+                        40
+                );
+            }
+            translate(0, (float) heightInc, 0);
+        }
+    }
+
+    /*
+    2D version
+    private void drawTemperatureCylinder() {
+
         double radiusFactor = 1.0 / temperatureField.length;
         for (int i = temperatureField.length - 1; i >= 0; i--) {
             fill(gradient.getGradient(temperatureField[i]));
@@ -266,6 +295,7 @@ public class ConeTC extends PApplet {
             );
         }
     }
+    */
 
     public void clear() {
         cp5.get(Textfield.class,"textValue").clear();
@@ -294,6 +324,7 @@ public class ConeTC extends PApplet {
     @Override
     public void keyPressed() {
         if (key == CODED) {
+            System.out.println("here");
             if (keyCode == UP)
                 rotationX -= 0.1f;
             if (keyCode == DOWN)
@@ -302,6 +333,10 @@ public class ConeTC extends PApplet {
                 rotationZ += 0.1f;
             if (keyCode == LEFT)
                 rotationZ -= 0.1f;
+        }
+        if (keyCode == 32) {
+            temperatureField = null;
+            loop();
         }
     }
 

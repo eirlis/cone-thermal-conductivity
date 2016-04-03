@@ -7,6 +7,14 @@ import java.util.Arrays;
  */
 public class TwoDimensionProblemSolver {
     private static final int mf = 102;
+    private int nr;
+    private int nz;
+
+
+    public TwoDimensionProblemSolver(int nr, int nz) {
+        this.nr = nr;
+        this.nz = nz;
+    }
 
     public double[][] calculateTemperature(
             double l,
@@ -108,8 +116,8 @@ public class TwoDimensionProblemSolver {
            double Th,
            double t
     ) {
-        int Nr = 50;
-        int Nz = 50;
+        int Nr = nr;
+        int Nz = nz;
         double[][] T = new double[Nr][Nz];
         double[] alpha = new double[mf];
         double[] beta = new double[mf];
@@ -195,8 +203,8 @@ public class TwoDimensionProblemSolver {
             double Ttop,
             double t
     ) {
-        int Nr = 50;
-        int Nz = 50;
+        int Nr = nr;
+        int Nz = nz;
         double[][] T = new double[Nr][Nz];
         double[] alpha = new double[mf];
         double[] beta = new double[mf];
@@ -259,7 +267,7 @@ public class TwoDimensionProblemSolver {
 
     public static void main(String[] args) {
         double[][] result =
-                new TwoDimensionProblemSolver()
+                new TwoDimensionProblemSolver(50, 50)
                         .calculateTemperature(
                                 0.5,
                                 0.5,
@@ -272,7 +280,7 @@ public class TwoDimensionProblemSolver {
                                 60
                         );
         result =
-                new TwoDimensionProblemSolver()
+                new TwoDimensionProblemSolver(50, 50)
                 .calculateTemperatureCylinder(
                         0.1,
                         0.1,

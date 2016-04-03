@@ -1,6 +1,7 @@
 package org.bitbucket.eirlis.conetc.render;
 
 import processing.core.PApplet;
+import processing.core.PImage;
 
 /**
  * Created by Elena on 28.03.2016.
@@ -159,5 +160,40 @@ public class FigureRenderer {
         mPApplet.endShape();
 
         mPApplet.popMatrix();
+    }
+
+    public void textureCylinder(
+            float radius,
+            float height,
+            PImage img,
+            int sides
+    ) {
+        mPApplet.rotateY(180);
+        mPApplet.background(0);
+        mPApplet.beginShape(PApplet.QUAD_STRIP);
+        mPApplet.texture(img);
+        float angle = (float) 270.0 / sides;
+        float[] tubeX = new float[sides];
+        float[] tubeY = new float[sides];
+        for (int i = 0; i < sides; i++) {
+            tubeX[i] = PApplet.cos(PApplet.radians(i * angle));
+            tubeY[i] = PApplet.sin(PApplet.radians(i * angle));
+        }
+
+        for (int i = 0; i < sides; i++) {
+            float x = tubeX[i] * radius;
+            float z = tubeY[i] * radius;
+            float u = img.width / sides * i;
+            mPApplet.vertex(x, -radius, z, u, 0);
+            mPApplet.vertex(x, radius, z, u, img.height);
+        }
+        mPApplet.endShape();
+        mPApplet.beginShape(PApplet.QUADS);
+        mPApplet.texture(img);
+        mPApplet.vertex(0, -radius, 0, 0, 0);
+        mPApplet.vertex(radius, -radius, 0, radius, 0);
+        mPApplet.vertex(radius, radius, 0, radius, radius);
+        mPApplet.vertex(0, radius, 0, 0, radius);
+        mPApplet.endShape();
     }
 }
