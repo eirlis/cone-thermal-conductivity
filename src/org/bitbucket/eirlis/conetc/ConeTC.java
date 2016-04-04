@@ -22,6 +22,8 @@ import java.util.List;
  * Created by Elena on 13.03.2016.
  */
 public class ConeTC extends PApplet {
+    private static final double MAX_TEMPERATURE = 500;
+    private static final double MIN_TEMPERATURE = 0;
     private static final double STEP_FREQUENCY = 0.1;
     private static final int NR = 100, NZ = 100;
     private float scaleX = 1, scaleY = 1;
@@ -34,9 +36,9 @@ public class ConeTC extends PApplet {
     private Gradient gradient = new Gradient(this);
     private ThermalCylinder thermalCylinder;
 
+    double[][] lastTemperatureField;
     double[][] temperatureField;
     private int steps;
-    private int bottomRadius = 100;
     private int topRadius = 100;
     private int coneHeight = 300;
     private double ro;
@@ -91,26 +93,7 @@ public class ConeTC extends PApplet {
                 .setSize(200, 20)
                 .setFont(font)
                 .setColor(color(255, 255, 255));
-        cp5.addTextfield("Bottom radius")
-                .setText("100")
-                .setPosition(20, 55)
-                .setSize(200, 25)
-                .setFont(font)
-                .setFocus(true)
-                .setColor(color(255, 255, 255))
-                .onLeave(new CallbackListener() {
-                    @Override
-                    public void controlEvent(CallbackEvent callbackEvent) {
-                        if (Integer.parseInt(cp5.get(Textfield.class, "Bottom radius").getText()) > 200) {
-                            bottomRadius = 200;
-                            cp5.get(Textfield.class, "Bottom radius").setText("200");
-                        }
-                        topRadius = Integer.parseInt(cp5.get(Textfield.class, "Bottom radius").getText());
-                        cp5.get(Textfield.class, "Top radius").setText(String.valueOf(topRadius));
 
-                    }
-                })
-        ;
         cp5.addTextfield("Top radius")
                 .setText("100")
                 .setPosition(20, 100)
@@ -124,8 +107,8 @@ public class ConeTC extends PApplet {
                     topRadius = 200;
                     cp5.get(Textfield.class, "Top radius").setText("200");
                 }
-                bottomRadius = Integer.parseInt(cp5.get(Textfield.class, "Top radius").getText());
-                cp5.get(Textfield.class, "Bottom radius").setText(String.valueOf(bottomRadius));
+               /* bottomRadius = Integer.parseInt(cp5.get(Textfield.class, "Top radius").getText());
+                cp5.get(Textfield.class, "Bottom radius").setText(String.valueOf(bottomRadius));*/
             }
         })
         ;
@@ -180,7 +163,7 @@ public class ConeTC extends PApplet {
                 .setColor(color(255, 255, 255))
         ;
         cp5.addTextfield("Border temperature")
-                .setText("50")
+                .setText("400")
                 .setPosition(20, 415)
                 .setSize(200, 25)
                 .setFont(font)
@@ -243,8 +226,8 @@ public class ConeTC extends PApplet {
                 .addListener(new ControlListener() {
                     @Override
                     public void controlEvent(ControlEvent controlEvent) {
+                        timeStep = time / steps;
                         started = true;
-                        timeStep = (double) time / steps;
                     }
                 });
 
@@ -289,8 +272,10 @@ public class ConeTC extends PApplet {
     }
 
     private void updateGradient() {
-        gradient.setMin(Math.min(T0, Th));
-        gradient.setMax(Math.max(T0, Th));
+        gradient.setMax(MAX_TEMPERATURE);
+        gradient.setMin(MIN_TEMPERATURE);
+//        gradient.setMin(Math.min(T0, Th));
+//        gradient.setMax(Math.max(T0, Th));
         List<Integer> colors = gradient.getColors();
         for (int i = 0; i < colors.size(); i++) {
             Textlabel label = cp5.get(Textlabel.class, "Color" + i);
@@ -311,21 +296,36 @@ public class ConeTC extends PApplet {
     }
 
     private void calculate() {
-        temperatureField = mThermalProblemSolver.calculateTemperatureCylinder(
-                Math.max(bottomRadius, topRadius) / 1000.0,
-                height / 1000.0,
-                lambda,
-                ro,
-                c,
-                T0,
-                Th,
-                Th,
-                Th,
-                currentTime
-        );
+        if (temperatureField != null) {
+            temperatureField = mThermalProblemSolver.calculateTemperatureCylinder(
+                    topRadius / 1000.0,
+                    height / 1000.0,
+                    lambda,
+                    ro,
+                    c,
+                    temperatureField,
+                    Th,
+                    Th,
+                    Th,
+                    timeStep
+            );
+        } else {
+            temperatureField = mThermalProblemSolver.calculateTemperatureCylinder(
+                    topRadius / 1000.0,
+                    height / 1000.0,
+                    lambda,
+                    ro,
+                    c,
+                    T0,
+                    Th,
+                    Th,
+                    Th,
+                    timeStep
+            );
+        }
         updateGradient();
         thermalCylinder = new ThermalCylinder(
-                bottomRadius,
+                topRadius,
                 coneHeight,
                 temperatureField,
                 gradient,
@@ -344,14 +344,15 @@ public class ConeTC extends PApplet {
                 currentTime += timeStep;
                 steps--;
                 cp5.get(Textfield.class, "Steps").setText(Integer.toString(steps));
-                if (steps <= 0)
+                if (steps <= 0) {
                     started = false;
+                    currentTime = 0;
+                }
             }
         }
         background(0);
         fill(255);
         try {
-            bottomRadius = Integer.parseInt(cp5.get(Textfield.class, "Bottom radius").getText());
             topRadius = Integer.parseInt(cp5.get(Textfield.class, "Top radius").getText());
             coneHeight = Integer.parseInt(cp5.get(Textfield.class, "Height").getText());
             ro = Double.parseDouble(cp5.get(Textfield.class, "Density").getText());
@@ -383,7 +384,7 @@ public class ConeTC extends PApplet {
             gradient.setMax(50);
             gradient.setMin(50);
             fill(gradient.getGradient(25));
-            mFigureRenderer.cylinder(bottomRadius, topRadius, coneHeight, 40);
+            mFigureRenderer.cylinder(topRadius, topRadius, coneHeight, 40);
         } else {
             // mFigureRenderer.textureCylinder(bottomRadius, coneHeight, loadImage("kotik.png"), 40);
             // drawTemperatureCylinder();
@@ -400,8 +401,8 @@ public class ConeTC extends PApplet {
             for (int j = NR - 1; j >= 0; j--) {
                 fill(gradient.getGradient(temperatureField[j][i]));
                 mFigureRenderer.tube(
-                        (float) (bottomRadius * radiusFactor * j),
-                        (float) (bottomRadius * radiusFactor * (j + 1)),
+                        (float) (topRadius * radiusFactor * j),
+                        (float) (topRadius * radiusFactor * (j + 1)),
                         (float) (topRadius * radiusFactor * j),
                         (float) (topRadius * radiusFactor * (j + 1)),
                         (float) heightInc,

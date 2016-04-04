@@ -265,6 +265,81 @@ public class TwoDimensionProblemSolver {
         return T;
     }
 
+
+    public double[][] calculateTemperatureCylinder(
+            double radius,
+            double height,
+            double lambda,
+            double ro,
+            double c,
+            double[][] T0,
+            double Th,
+            double Tbottom,
+            double Ttop,
+            double t
+    ) {
+        int Nr = nr;
+        int Nz = nz;
+        double[][] T = new double[Nr][Nz];
+        double[] alpha = new double[mf];
+        double[] beta = new double[mf];
+        double hr = radius / (Nr - 1);
+        double hz = height / (Nz - 1);
+        double a = lambda / ro * c;
+        double tau = t / 100.0;
+
+        for (int i = 0; i < Nr; i++) {
+            for (int j = 0; j < Nz; j++) {
+                T[i][j] = T0[i][j];
+            }
+        }
+
+        double time = 0;
+
+        while (time < t) {
+            time += tau;
+            for (int j = 0; j < Nz; j++) {
+                alpha[1] = 1.0;
+                beta[1] = 0.0;
+
+                for (int i = 2; i <= Nr - 1; i++) {
+                    double ai = 0.5 * lambda * (2 * i - 1) / (Math.pow(hr, 2) * (i - 1));
+                    double ci = 0.5 * lambda * (2 * i - 3) / (Math.pow(hr, 2) * (i - 1));
+                    double bi = ai + ci + ro * c / tau;
+                    double fi = -ro * c * T[i - 1][j] / tau;
+
+                    alpha[i] = ai / (bi - ci * alpha[i - 1]);
+                    beta[i] = (ci * beta[i - 1] - fi) / (bi - ci * alpha[i - 1]);
+                }
+
+                T[Nr - 1][j] = Th;
+
+                for (int i = Nr - 2; i >= 0; i--) {
+                    T[i][j] = alpha[i + 1] * T[i + 1][j] + beta[i + 1];
+                }
+            }
+
+            for (int i = 1; i < Nr - 1; i++) {
+                alpha[1] = 0;
+                beta[1] = Tbottom;
+                for (int j = 2; j <= Nz - 1; j++) {
+                    double ai = lambda / (hz * hz);
+                    double bi = 2.0 * lambda / (hz * hz) + ro * c / tau;
+                    double ci = lambda / (hz * hz);
+                    double fi = -ro * c * T[i][j - 1] / tau;
+
+                    alpha[j] = ai / (bi - ci * alpha[j - 1]);
+                    beta[j] = (ci * beta[j - 1] - fi) / (bi - ci * alpha[j - 1]);
+                }
+                T[i][Nz - 1] = Ttop;
+                for (int j = Nz - 2; j >= 0; j--) {
+                    T[i][j] = alpha[j + 1] * T[i][j + 1]+ beta[j + 1];
+                }
+            }
+        }
+        return T;
+    }
+
     public static void main(String[] args) {
         double[][] result =
                 new TwoDimensionProblemSolver(50, 50)
