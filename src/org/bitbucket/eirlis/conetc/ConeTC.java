@@ -88,6 +88,13 @@ public class ConeTC extends PApplet {
         _positionManager.setOffsetY(0.3f);
         _positionManager.setScale(0.7f);
 
+
+        //TODO:
+        //handle min/max values
+        //minus in temperature
+        //framerate
+        //min max temp for gradient --> bound gradient n temperature fields with min/max values
+        //steps counter < 0
         cp5.addLabel("Geometric Characteristics: ")
                 .setPosition(20, 20)
                 .setSize(200, 20)
@@ -250,7 +257,6 @@ public class ConeTC extends PApplet {
     }
 
     private void resetToDefaults() {
-        cp5.get(Textfield.class, "Bottom radius").setText("100");
         cp5.get(Textfield.class, "Top radius").setText("100");
         cp5.get(Textfield.class, "Height").setText("300");
         cp5.get(Textfield.class, "Density").setText("1500");
