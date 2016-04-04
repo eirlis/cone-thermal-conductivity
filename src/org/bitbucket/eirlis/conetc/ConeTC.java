@@ -34,6 +34,7 @@ public class ConeTC extends PApplet {
     private ThermalCylinder thermalCylinder;
 
     double[][] temperatureField;
+    private int steps;
     private int bottomRadius = 100;
     private int topRadius = 100;
     private int coneHeight = 300;
@@ -45,16 +46,17 @@ public class ConeTC extends PApplet {
     private double time;
 
     private PositionManager _positionManager;
+
     @Override
     public void mouseWheel(MouseEvent event) {
         super.mouseWheel(event);
-            final float k = 0.2f;
-            _positionManager.changeScale(-event.getCount() * k);
+        final float k = 0.2f;
+        _positionManager.changeScale(-event.getCount() * k);
     }
 
     @Override
     public void settings() {
-        size(900, 800, "processing.opengl.PGraphics3D");
+        size(800, 650, "processing.opengl.PGraphics3D");
     }
 
     @Override
@@ -70,7 +72,7 @@ public class ConeTC extends PApplet {
         gradient.addColor(color(204, 51, 0));
         gradient.addColor(color(153, 0, 0));
 
-        PFont font = createFont("arial",20);
+        PFont font = createFont("arial", 20);
 
         cp5 = new ControlP5(this);
         _positionManager = new PositionManager(this, 450, 200);
@@ -78,85 +80,144 @@ public class ConeTC extends PApplet {
         _positionManager.setScale(0.7f);
 
         cp5.addLabel("Geometric Characteristics: ")
-                .setPosition(20, 50)
-                .setSize(200, 40)
+                .setPosition(20, 20)
+                .setSize(200, 20)
                 .setFont(font)
                 .setColor(color(255, 255, 255));
         cp5.addTextfield("Bottom radius")
                 .setText("100")
-                .setPosition(20,100)
-                .setSize(200,40)
+                .setPosition(20, 55)
+                .setSize(200, 25)
                 .setFont(font)
                 .setFocus(true)
-                .setColor(color(255,255,255))
+                .setColor(color(255, 255, 255))
+                .onLeave(new CallbackListener() {
+                    @Override
+                    public void controlEvent(CallbackEvent callbackEvent) {
+                        if (Integer.parseInt(cp5.get(Textfield.class, "Bottom radius").getText()) > 200) {
+                            bottomRadius = 200;
+                            cp5.get(Textfield.class, "Bottom radius").setText("200");
+                        }
+                        topRadius = Integer.parseInt(cp5.get(Textfield.class, "Bottom radius").getText());
+                        cp5.get(Textfield.class, "Top radius").setText(String.valueOf(topRadius));
+
+                    }
+                })
         ;
         cp5.addTextfield("Top radius")
                 .setText("100")
-                .setPosition(20,170)
-                .setSize(200,40)
+                .setPosition(20, 100)
+                .setSize(200, 25)
                 .setFont(font)
-                .setColor(color(255,255,255))
+                .setColor(color(255, 255, 255))
+        .onLeave(new CallbackListener() {
+            @Override
+            public void controlEvent(CallbackEvent callbackEvent) {
+                if (Integer.parseInt(cp5.get(Textfield.class, "Top radius").getText()) > 200) {
+                    topRadius = 200;
+                    cp5.get(Textfield.class, "Top radius").setText("200");
+                }
+                bottomRadius = Integer.parseInt(cp5.get(Textfield.class, "Top radius").getText());
+                cp5.get(Textfield.class, "Bottom radius").setText(String.valueOf(bottomRadius));
+            }
+        })
         ;
         cp5.addTextfield("Height")
                 .setText("300")
-                .setPosition(20,240)
-                .setSize(200,40)
+                .setPosition(20, 145)
+                .setSize(200, 25)
                 .setFont(font)
-                .setColor(color(255,255,255))
+                .setColor(color(255, 255, 255))
+        .onLeave(new CallbackListener() {
+            @Override
+            public void controlEvent(CallbackEvent callbackEvent) {
+                if (Integer.parseInt(cp5.get(Textfield.class, "Height").getText()) > 400) {
+                    height = 400;
+                    cp5.get(Textfield.class, "Height").setText("400");
+                }
+            }
+        })
         ;
         cp5.addLabel("Physical Characteristics: ")
-                .setPosition(20, 310)
-                .setSize(200, 40)
+                .setPosition(20, 190)
+                .setSize(200, 25)
                 .setFont(font)
                 .setColor(color(255, 255, 255))
         ;
         cp5.addTextfield("Density")
                 .setText("1500")
-                .setPosition(20,360)
-                .setSize(200,40)
+                .setPosition(20, 235)
+                .setSize(200, 25)
                 .setFont(font)
-                .setColor(color(255,255,255))
+                .setColor(color(255, 255, 255))
         ;
         cp5.addTextfield("Specific Heat Capacity")
                 .setText("750")
-                .setPosition(20,430)
-                .setSize(200,40)
+                .setPosition(20, 280)
+                .setSize(200, 25)
                 .setFont(font)
-                .setColor(color(255,255,255))
+                .setColor(color(255, 255, 255))
         ;
         cp5.addTextfield("Conductivity coefficient")
                 .setText("0.7")
-                .setPosition(20,500)
-                .setSize(200,40)
+                .setPosition(20, 325)
+                .setSize(200, 25)
                 .setFont(font)
-                .setColor(color(255,255,255))
+                .setColor(color(255, 255, 255))
         ;
         cp5.addTextfield("Initial temperature")
                 .setText("20")
-                .setPosition(20,570)
-                .setSize(200,40)
+                .setPosition(20, 370)
+                .setSize(200, 25)
                 .setFont(font)
-                .setColor(color(255,255,255))
+                .setColor(color(255, 255, 255))
         ;
         cp5.addTextfield("Border temperature")
                 .setText("50")
-                .setPosition(20,640)
-                .setSize(200,40)
+                .setPosition(20, 415)
+                .setSize(200, 25)
                 .setFont(font)
-                .setColor(color(255,255,255))
+                .setColor(color(255, 255, 255))
         ;
-        cp5.addLabel("Time: ")
-                .setPosition(300, 500)
-                .setSize(200, 40)
+        cp5.addLabel("Time (ms): ")
+                .setPosition(20, 470)
+                .setSize(200, 25)
                 .setFont(font)
                 .setColor(color(255, 255, 255))
         ;
         cp5.addTextfield("Time")
                 .setText("30")
-                .setPosition(300,570)
-                .setSize(200,40)
+                .setPosition(20, 515)
+                .setSize(150, 25)
                 .setFont(font)
-                .setColor(color(255,255,255))
+                .setColor(color(255, 255, 255))
+        .onLeave(new CallbackListener() {
+            @Override
+            public void controlEvent(CallbackEvent callbackEvent) {
+                if (Integer.parseInt(cp5.get(Textfield.class, "Time").getText()) > 99999) {
+                    cp5.get(Textfield.class, "Time").setText("300");
+                    time = Double.parseDouble(cp5.get(Textfield.class, "Time").getText());
+                }
+
+            }
+        })
+        ;
+
+        cp5.addTextfield("Steps")
+                .setText("10")
+                .setPosition(175, 515)
+                .setSize(45, 25)
+                .setFont(font)
+                .setColor(color(255, 255, 255))
+        .onLeave(new CallbackListener() {
+            @Override
+            public void controlEvent(CallbackEvent callbackEvent) {
+                if (Integer.parseInt(cp5.get(Textfield.class, "Steps").getText()) > 100) {
+                    cp5.get(Textfield.class, "Steps").setText("100");
+                    time = Integer.parseInt(cp5.get(Textfield.class, "Steps").getText());
+                }
+            }
+        })
         ;
 
         List<Integer> colors = gradient.getColors();
@@ -169,14 +230,14 @@ public class ConeTC extends PApplet {
                     .setColor(color(255, 255, 255));
         }
 
-        cp5.addButton("Calculate")
-                .setPosition(300, 670)
-                .setSize(100, 40)
+        Button btStartAnimation = cp5.addButton("Calculate")
+                .setPosition(300, 610)
+                .setSize(150, 30)
                 .addListener(new ControlListener() {
                     @Override
                     public void controlEvent(ControlEvent controlEvent) {
                         temperatureField = mThermalProblemSolver.calculateTemperatureCylinder(
-                                 Math.max(bottomRadius, topRadius) / 1000.0,
+                                Math.max(bottomRadius, topRadius) / 1000.0,
                                 height / 1000.0,
                                 lambda,
                                 ro,
@@ -199,7 +260,40 @@ public class ConeTC extends PApplet {
                     }
                 });
 
+        Button btReset = cp5.addButton("Reset data")
+                .setPosition(300, 640)
+                .setSize(200, 30);
+
+        btReset.addCallback(new CallbackListener() {
+            @Override
+            public void controlEvent(CallbackEvent callbackEvent) {
+                if (callbackEvent.getAction() == ControlP5.ACTION_PRESS) {
+                    resetToDefaults();
+                    btStartAnimation.setColor(ControlP5.THEME_GREY);
+
+                }
+            }
+        });
+
         textFont(font);
+    }
+
+    private void resetToDefaults() {
+        cp5.get(Textfield.class, "Bottom radius").setText("100");
+        cp5.get(Textfield.class, "Top radius").setText("100");
+        cp5.get(Textfield.class, "Height").setText("300");
+        cp5.get(Textfield.class, "Density").setText("1500");
+        cp5.get(Textfield.class, "Specific Heat Capacity").setText("1500");
+        cp5.get(Textfield.class, "Specific Heat Capacity").setText("750");
+        cp5.get(Textfield.class, "Conductivity coefficient").setText("0.7");
+        cp5.get(Textfield.class, "Initial temperature").setText("20");
+        cp5.get(Textfield.class, "Initial temperature").setText("20");
+        cp5.get(Textfield.class, "Border temperature").setText("50");
+        cp5.get(Textfield.class, "Time").setText("30");
+        cp5.get(Textfield.class, "Steps").setText("10");
+        if (temperatureField != null)
+            temperatureField = null;
+
     }
 
     private void updateGradient() {
@@ -208,7 +302,7 @@ public class ConeTC extends PApplet {
         List<Integer> colors = gradient.getColors();
         for (int i = 0; i < colors.size(); i++) {
             Textlabel label = cp5.get(Textlabel.class, "Color" + i);
-            label.setText(Integer.toString((int)gradient.getColorValue(i)));
+            label.setText(Integer.toString((int) gradient.getColorValue(i)));
         }
     }
 
@@ -277,10 +371,10 @@ public class ConeTC extends PApplet {
             for (int j = NR - 1; j >= 0; j--) {
                 fill(gradient.getGradient(temperatureField[j][i]));
                 mFigureRenderer.tube(
-                        (float)(bottomRadius * radiusFactor * j),
-                        (float)(bottomRadius * radiusFactor * (j + 1)),
-                        (float)(topRadius * radiusFactor * j),
-                        (float)(topRadius * radiusFactor * (j + 1)),
+                        (float) (bottomRadius * radiusFactor * j),
+                        (float) (bottomRadius * radiusFactor * (j + 1)),
+                        (float) (topRadius * radiusFactor * j),
+                        (float) (topRadius * radiusFactor * (j + 1)),
                         (float) heightInc,
                         40
                 );
@@ -309,21 +403,21 @@ public class ConeTC extends PApplet {
     */
 
     public void clear() {
-        cp5.get(Textfield.class,"textValue").clear();
+        cp5.get(Textfield.class, "textValue").clear();
     }
 
     void controlEvent(ControlEvent theEvent) {
-        if(theEvent.isAssignableFrom(Textfield.class)) {
+        if (theEvent.isAssignableFrom(Textfield.class)) {
             println("controlEvent: accessing a string from controller '"
-                    +theEvent.getName()+"': "
-                    +theEvent.getStringValue()
+                    + theEvent.getName() + "': "
+                    + theEvent.getStringValue()
             );
         }
     }
 
     public void input(String theText) {
         // automatically receives results from controller input
-        println("a textfield event for controller 'input' : "+theText);
+        println("a textfield event for controller 'input' : " + theText);
     }
 
     private static int rgbToInt(int red, int green, int blue) {
@@ -332,6 +426,7 @@ public class ConeTC extends PApplet {
         rgb = (rgb << 8) + blue;
         return rgb;
     }
+
     @Override
     public void keyPressed() {
         if (key == CODED) {
@@ -355,11 +450,11 @@ public class ConeTC extends PApplet {
     public void mouseDragged() {
 //        rotationX = rotationX + 0.01f * (mouseX - pmouseX);
 //        rotationZ = rotationZ + 0.01f * (mouseY - pmouseY);
-            _positionManager.setPositionByMouse();
+        _positionManager.setPositionByMouse();
     }
 
     public static void main(String[] args) {
-        PApplet.main(new String[] { "org.bitbucket.eirlis.conetc.ConeTC" });
+        PApplet.main(new String[]{"org.bitbucket.eirlis.conetc.ConeTC"});
         System.out.println("Hello");
     }
 }

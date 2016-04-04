@@ -76,7 +76,7 @@ public class ThermalCylinder {
             double temp = i * nodesToPixels;
             int left = (int) (temp);
             int right = (int) Math.ceil(temp);
-            double t = tField[n - 25][left] + (tField[n - 25][right] - tField[n - 25][left]) * (temp - left);
+            double t = tField[n - 1][left] + (tField[n - 1][right] - tField[n - 1][left]) * (temp - left);
             for (int j = 0; j < SIDE_TEXTURE_WIDTH; j++) {
                 bi.setRGB(j, i, gradient.getGradient(t));
             }
