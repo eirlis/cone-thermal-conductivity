@@ -22,6 +22,7 @@ import java.util.List;
  * Created by Elena on 13.03.2016.
  */
 public class ConeTC extends PApplet {
+    private static final double STEP_FREQUENCY = 0.1;
     private static final int NR = 100, NZ = 100;
     private float scaleX = 1, scaleY = 1;
     private float rotationX = 0f;
@@ -45,6 +46,11 @@ public class ConeTC extends PApplet {
     private double Th;
     private double time;
 
+    private double timeStep;
+    private double currentTime = 0;
+    private double timer = STEP_FREQUENCY;
+    private boolean started = false;
+
     private PositionManager _positionManager;
 
     @Override
@@ -61,6 +67,7 @@ public class ConeTC extends PApplet {
 
     @Override
     public void setup() {
+
         gradient.addColor(color(102, 0, 102));
         gradient.addColor(color(0, 144, 255));
         gradient.addColor(color(0, 255, 207));
@@ -236,27 +243,8 @@ public class ConeTC extends PApplet {
                 .addListener(new ControlListener() {
                     @Override
                     public void controlEvent(ControlEvent controlEvent) {
-                        temperatureField = mThermalProblemSolver.calculateTemperatureCylinder(
-                                Math.max(bottomRadius, topRadius) / 1000.0,
-                                height / 1000.0,
-                                lambda,
-                                ro,
-                                c,
-                                T0,
-                                Th,
-                                Th,
-                                Th,
-                                time
-                        );
-                        updateGradient();
-                        thermalCylinder = new ThermalCylinder(
-                                bottomRadius,
-                                coneHeight,
-                                temperatureField,
-                                gradient,
-                                ConeTC.this,
-                                50
-                        );
+                        started = true;
+                        timeStep = (double) time / steps;
                     }
                 });
 
@@ -291,8 +279,12 @@ public class ConeTC extends PApplet {
         cp5.get(Textfield.class, "Border temperature").setText("50");
         cp5.get(Textfield.class, "Time").setText("30");
         cp5.get(Textfield.class, "Steps").setText("10");
-        if (temperatureField != null)
+        if (temperatureField != null) {
+            started = false;
+            currentTime = 0;
+            timer = STEP_FREQUENCY;
             temperatureField = null;
+        }
 
     }
 
@@ -318,8 +310,44 @@ public class ConeTC extends PApplet {
         }
     }
 
+    private void calculate() {
+        temperatureField = mThermalProblemSolver.calculateTemperatureCylinder(
+                Math.max(bottomRadius, topRadius) / 1000.0,
+                height / 1000.0,
+                lambda,
+                ro,
+                c,
+                T0,
+                Th,
+                Th,
+                Th,
+                currentTime
+        );
+        updateGradient();
+        thermalCylinder = new ThermalCylinder(
+                bottomRadius,
+                coneHeight,
+                temperatureField,
+                gradient,
+                ConeTC.this,
+                50
+        );
+    }
     @Override
     public void draw() {
+        double deltaTime = 1.0 / frameRate;
+        if (started) {
+            timer -= deltaTime;
+            if (timer < 0) {
+                calculate();
+                timer += STEP_FREQUENCY;
+                currentTime += timeStep;
+                steps--;
+                cp5.get(Textfield.class, "Steps").setText(Integer.toString(steps));
+                if (steps <= 0)
+                    started = false;
+            }
+        }
         background(0);
         fill(255);
         try {
@@ -332,6 +360,7 @@ public class ConeTC extends PApplet {
             T0 = Double.parseDouble(cp5.get(Textfield.class, "Initial temperature").getText());
             Th = Double.parseDouble(cp5.get(Textfield.class, "Border temperature").getText());
             time = Double.parseDouble(cp5.get(Textfield.class, "Time").getText());
+            steps = Integer.parseInt(cp5.get(Textfield.class, "Steps").getText());
 
         } catch (NumberFormatException e) {
 
