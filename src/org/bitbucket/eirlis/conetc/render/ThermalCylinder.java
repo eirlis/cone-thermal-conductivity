@@ -52,6 +52,7 @@ public class ThermalCylinder {
         initSideTexture(tField, gradient);
         initInnerTexture(tField, gradient);
         initTopTexture(tField, gradient);
+        initBottomTexture(tField, gradient);
         pApplet = applet;
     }
 
@@ -61,6 +62,7 @@ public class ThermalCylinder {
         drawSide();
         drawInner();
         drawTop();
+        drawBottom();
         pApplet.popMatrix();
     }
 

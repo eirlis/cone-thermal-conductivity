@@ -1,21 +1,15 @@
 package org.bitbucket.eirlis.conetc;
 
 import controlP5.*;
-import org.bitbucket.eirlis.conetc.core.ThermalProblemSolver;
 import org.bitbucket.eirlis.conetc.core.TwoDimensionProblemSolver;
 import org.bitbucket.eirlis.conetc.managers.PositionManager;
 import org.bitbucket.eirlis.conetc.render.FigureRenderer;
 import org.bitbucket.eirlis.conetc.render.Gradient;
 import org.bitbucket.eirlis.conetc.render.ThermalCylinder;
-import org.omg.CORBA.DoubleHolder;
 import processing.core.PApplet;
 import processing.core.PFont;
-import processing.core.PImage;
-import processing.event.KeyEvent;
 import processing.event.MouseEvent;
-import sun.font.TextLabel;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -37,7 +31,7 @@ public class ConeTC extends PApplet {
 
     private double MAX_TEMPERATURE = 500;
     private double MIN_TEMPERATURE = 0;
-    private double STEP_FREQUENCY = 0.1;
+    private double stepFrequency = 0.1;
 
     double[][] temperatureField;
     private int steps;
@@ -52,7 +46,7 @@ public class ConeTC extends PApplet {
 
     private double timeStep;
     private double currentTime = 0;
-    private double timer = STEP_FREQUENCY;
+    private double timer = stepFrequency;
     private boolean started = false;
 
     private PositionManager _positionManager;
@@ -66,7 +60,7 @@ public class ConeTC extends PApplet {
 
     @Override
     public void settings() {
-        size(800, 650, "processing.opengl.PGraphics3D");
+        size(800, 750, "processing.opengl.PGraphics3D");
     }
 
     @Override
@@ -107,6 +101,7 @@ public class ConeTC extends PApplet {
                 .setText("100")
                 .setPosition(20, 100)
                 .setSize(200, 25)
+                .setInputFilter(ControlP5.INTEGER)
                 .setFont(font)
                 .setColor(color(255, 255, 255))
                 .onLeave(new CallbackListener() {
@@ -131,6 +126,7 @@ public class ConeTC extends PApplet {
                 .setText("300")
                 .setPosition(20, 145)
                 .setSize(200, 25)
+                .setInputFilter(ControlP5.INTEGER)
                 .setFont(font)
                 .setColor(color(255, 255, 255))
                 .onLeave(new CallbackListener() {
@@ -159,6 +155,7 @@ public class ConeTC extends PApplet {
                 .setText("1500")
                 .setPosition(20, 235)
                 .setSize(200, 25)
+                .setInputFilter(ControlP5.FLOAT)
                 .setFont(font)
                 .setColor(color(255, 255, 255))
         ;
@@ -166,6 +163,7 @@ public class ConeTC extends PApplet {
                 .setText("750")
                 .setPosition(20, 280)
                 .setSize(200, 25)
+                .setInputFilter(ControlP5.FLOAT)
                 .setFont(font)
                 .setColor(color(255, 255, 255))
         ;
@@ -173,6 +171,7 @@ public class ConeTC extends PApplet {
                 .setText("0.7")
                 .setPosition(20, 325)
                 .setSize(200, 25)
+                .setInputFilter(ControlP5.FLOAT)
                 .setFont(font)
                 .setColor(color(255, 255, 255))
         ;
@@ -180,6 +179,7 @@ public class ConeTC extends PApplet {
                 .setText("20")
                 .setPosition(20, 370)
                 .setSize(200, 25)
+                .setInputFilter(ControlP5.FLOAT)
                 .setFont(font)
                 .setColor(color(255, 255, 255))
         ;
@@ -187,6 +187,7 @@ public class ConeTC extends PApplet {
                 .setText("400")
                 .setPosition(20, 415)
                 .setSize(200, 25)
+                .setInputFilter(ControlP5.FLOAT)
                 .setFont(font)
                 .setColor(color(255, 255, 255))
         ;
@@ -200,6 +201,7 @@ public class ConeTC extends PApplet {
                 .setText("300")
                 .setPosition(20, 515)
                 .setSize(150, 25)
+                .setInputFilter(ControlP5.INTEGER)
                 .setFont(font)
                 .setColor(color(255, 255, 255))
                 .onLeave(new CallbackListener() {
@@ -225,7 +227,14 @@ public class ConeTC extends PApplet {
                 .setPosition(175, 515)
                 .setSize(45, 25)
                 .setFont(font)
+                .setInputFilter(ControlP5.INTEGER)
                 .setColor(color(255, 255, 255))
+                .addListener(new ControlListener() {
+                    @Override
+                    public void controlEvent(ControlEvent controlEvent) {
+                        System.out.println(".!.");
+                    }
+                })
                 .onLeave(new CallbackListener() {
                     @Override
                     public void controlEvent(CallbackEvent callbackEvent) {
@@ -248,18 +257,19 @@ public class ConeTC extends PApplet {
                 .setPosition(20, 560)
                 .setSize(150, 25)
                 .setFont(font)
+                .setInputFilter(ControlP5.FLOAT)
                 .setColor(color(255, 255, 255))
                 .onLeave(new CallbackListener() {
                     @Override
                     public void controlEvent(CallbackEvent callbackEvent) {
                         if (Objects.equals(cp5.get(Textfield.class, "Animation delay").getText(), "")) {
-                            STEP_FREQUENCY = 0.5;
+                            stepFrequency = 0.5;
                             cp5.get(Textfield.class, "Animation delay").setText("0.5");
                         }
 
                         if (Double.parseDouble(cp5.get(Textfield.class, "Animation delay").getText()) > 0.99 ||
                                 Double.parseDouble(cp5.get(Textfield.class, "Animation delay").getText()) < 0.01) {
-                            STEP_FREQUENCY = 0.5;
+                            stepFrequency = 0.5;
                             cp5.get(Textfield.class, "Animation delay").setText("0.5");
                         }
                     }
@@ -282,8 +292,7 @@ public class ConeTC extends PApplet {
                 .addListener(new ControlListener() {
                     @Override
                     public void controlEvent(ControlEvent controlEvent) {
-                        timeStep = time / steps;
-                        started = true;
+                        startDraw();
                     }
                 });
 
@@ -317,10 +326,12 @@ public class ConeTC extends PApplet {
         cp5.get(Textfield.class, "Time").setText("300");
         cp5.get(Textfield.class, "Steps").setText("10");
         cp5.get(Textfield.class, "Animation delay").setText("0.5");
+
+
         if (temperatureField != null) {
-            started = false;
-            currentTime = 0;
-            timer = STEP_FREQUENCY;
+            stopDraw();
+
+            cp5.get(Textfield.class, "Border temperature").unlock();
             temperatureField = null;
         }
 
@@ -389,6 +400,40 @@ public class ConeTC extends PApplet {
         );
     }
 
+    private void startDraw() {
+        if (steps <= 0)
+            return;
+        timeStep = time / steps;
+        started = true;
+        cp5.get(Textfield.class, "Top radius").lock();
+        cp5.get(Textfield.class, "Height").lock();
+        cp5.get(Textfield.class, "Density").lock();
+
+        cp5.get(Textfield.class, "Specific Heat Capacity").lock();
+        cp5.get(Textfield.class, "Conductivity coefficient").lock();
+        cp5.get(Textfield.class, "Initial temperature").lock();
+        cp5.get(Textfield.class, "Border temperature").lock();
+        cp5.get(Textfield.class, "Time").lock();
+        cp5.get(Textfield.class, "Steps").lock();
+    }
+
+    private void stopDraw() {
+        started = false;
+        cp5.get(Button.class, "Start animation").setColor(ControlP5.THEME_CP5BLUE);
+        cp5.get(Button.class, "Start animation").setLabel("Start animation");
+        currentTime = 0;
+        timer = stepFrequency;
+
+        cp5.get(Textfield.class, "Top radius").unlock();
+        cp5.get(Textfield.class, "Height").unlock();
+        cp5.get(Textfield.class, "Density").unlock();
+
+        cp5.get(Textfield.class, "Specific Heat Capacity").unlock();
+        cp5.get(Textfield.class, "Conductivity coefficient").unlock();
+        cp5.get(Textfield.class, "Initial temperature").unlock();
+        cp5.get(Textfield.class, "Time").unlock();
+        cp5.get(Textfield.class, "Steps").unlock();
+    }
     @Override
     public void draw() {
         double deltaTime = 1.0 / frameRate;
@@ -398,15 +443,12 @@ public class ConeTC extends PApplet {
             timer -= deltaTime;
             if (timer < 0) {
                 calculate();
-                timer += STEP_FREQUENCY;
+                timer += stepFrequency;
                 currentTime += timeStep;
                 steps--;
                 cp5.get(Textfield.class, "Steps").setText(Integer.toString(steps));
                 if (steps <= 0) {
-                    started = false;
-                    cp5.get(Button.class, "Start animation").setColor(ControlP5.THEME_CP5BLUE);
-                    cp5.get(Button.class, "Start animation").setLabel("Start animation");
-                    currentTime = 0;
+                    stopDraw();
                 }
             }
         }
@@ -422,7 +464,7 @@ public class ConeTC extends PApplet {
             Th = Double.parseDouble(cp5.get(Textfield.class, "Border temperature").getText());
             time = Double.parseDouble(cp5.get(Textfield.class, "Time").getText());
             steps = Integer.parseInt(cp5.get(Textfield.class, "Steps").getText());
-            STEP_FREQUENCY = Double.parseDouble(cp5.get(Textfield.class, "Animation delay").getText());
+            stepFrequency = Double.parseDouble(cp5.get(Textfield.class, "Animation delay").getText());
 
         } catch (NumberFormatException e) {
 
