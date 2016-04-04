@@ -17,15 +17,14 @@ import sun.font.TextLabel;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by Elena on 13.03.2016.
  */
 public class ConeTC extends PApplet {
-    private static final double MAX_TEMPERATURE = 500;
-    private static final double MIN_TEMPERATURE = 0;
-    private static final double STEP_FREQUENCY = 0.1;
-    private static final int NR = 100, NZ = 100;
+
+    private static int NR = 100, NZ = 100;
     private float scaleX = 1, scaleY = 1;
     private float rotationX = 0f;
     private float rotationZ = 0f;
@@ -36,7 +35,10 @@ public class ConeTC extends PApplet {
     private Gradient gradient = new Gradient(this);
     private ThermalCylinder thermalCylinder;
 
-    double[][] lastTemperatureField;
+    private double MAX_TEMPERATURE = 500;
+    private double MIN_TEMPERATURE = 0;
+    private double STEP_FREQUENCY = 0.1;
+
     double[][] temperatureField;
     private int steps;
     private int topRadius = 100;
@@ -107,17 +109,23 @@ public class ConeTC extends PApplet {
                 .setSize(200, 25)
                 .setFont(font)
                 .setColor(color(255, 255, 255))
-        .onLeave(new CallbackListener() {
-            @Override
-            public void controlEvent(CallbackEvent callbackEvent) {
-                if (Integer.parseInt(cp5.get(Textfield.class, "Top radius").getText()) > 200) {
-                    topRadius = 200;
-                    cp5.get(Textfield.class, "Top radius").setText("200");
-                }
+                .onLeave(new CallbackListener() {
+                    @Override
+                    public void controlEvent(CallbackEvent callbackEvent) {
+                        if (Objects.equals(cp5.get(Textfield.class, "Top radius").getText(), "")) {
+                            topRadius = 100;
+                            cp5.get(Textfield.class, "Top radius").setText("100");
+                        }
+
+                        if (Integer.parseInt(cp5.get(Textfield.class, "Top radius").getText()) > 200 ||
+                                Integer.parseInt(cp5.get(Textfield.class, "Top radius").getText()) < 50) {
+                            topRadius = 100;
+                            cp5.get(Textfield.class, "Top radius").setText("100");
+                        }
                /* bottomRadius = Integer.parseInt(cp5.get(Textfield.class, "Top radius").getText());
                 cp5.get(Textfield.class, "Bottom radius").setText(String.valueOf(bottomRadius));*/
-            }
-        })
+                    }
+                })
         ;
         cp5.addTextfield("Height")
                 .setText("300")
@@ -125,15 +133,21 @@ public class ConeTC extends PApplet {
                 .setSize(200, 25)
                 .setFont(font)
                 .setColor(color(255, 255, 255))
-        .onLeave(new CallbackListener() {
-            @Override
-            public void controlEvent(CallbackEvent callbackEvent) {
-                if (Integer.parseInt(cp5.get(Textfield.class, "Height").getText()) > 400) {
-                    height = 400;
-                    cp5.get(Textfield.class, "Height").setText("400");
-                }
-            }
-        })
+                .onLeave(new CallbackListener() {
+                    @Override
+                    public void controlEvent(CallbackEvent callbackEvent) {
+                        if (Objects.equals(cp5.get(Textfield.class, "Height").getText(), "")) {
+                            height = 200;
+                            cp5.get(Textfield.class, "Height").setText("400");
+                        }
+
+                        if (Integer.parseInt(cp5.get(Textfield.class, "Height").getText()) > 400 ||
+                            Integer.parseInt(cp5.get(Textfield.class, "Height").getText()) < 50) {
+                            height = 200;
+                            cp5.get(Textfield.class, "Height").setText("400");
+                        }
+                    }
+                })
         ;
         cp5.addLabel("Physical Characteristics: ")
                 .setPosition(20, 190)
@@ -176,28 +190,34 @@ public class ConeTC extends PApplet {
                 .setFont(font)
                 .setColor(color(255, 255, 255))
         ;
-        cp5.addLabel("Time (ms): ")
+        cp5.addLabel("Animation: ")
                 .setPosition(20, 470)
                 .setSize(200, 25)
                 .setFont(font)
                 .setColor(color(255, 255, 255))
         ;
         cp5.addTextfield("Time")
-                .setText("30")
+                .setText("300")
                 .setPosition(20, 515)
                 .setSize(150, 25)
                 .setFont(font)
                 .setColor(color(255, 255, 255))
-        .onLeave(new CallbackListener() {
-            @Override
-            public void controlEvent(CallbackEvent callbackEvent) {
-                if (Integer.parseInt(cp5.get(Textfield.class, "Time").getText()) > 99999) {
-                    cp5.get(Textfield.class, "Time").setText("300");
-                    time = Double.parseDouble(cp5.get(Textfield.class, "Time").getText());
-                }
+                .onLeave(new CallbackListener() {
+                    @Override
+                    public void controlEvent(CallbackEvent callbackEvent) {
+                        if (Objects.equals(cp5.get(Textfield.class, "Time").getText(), "")) {
+                            time = 300;
+                            cp5.get(Textfield.class, "Time").setText("300");
+                        }
 
-            }
-        })
+                        if (Integer.parseInt(cp5.get(Textfield.class, "Time").getText()) > 99999 ||
+                                Integer.parseInt(cp5.get(Textfield.class, "Time").getText()) < 1) {
+                            time = 300;
+                            cp5.get(Textfield.class, "Time").setText("300");
+                        }
+
+                    }
+                })
         ;
 
         cp5.addTextfield("Steps")
@@ -206,15 +226,44 @@ public class ConeTC extends PApplet {
                 .setSize(45, 25)
                 .setFont(font)
                 .setColor(color(255, 255, 255))
-        .onLeave(new CallbackListener() {
-            @Override
-            public void controlEvent(CallbackEvent callbackEvent) {
-                if (Integer.parseInt(cp5.get(Textfield.class, "Steps").getText()) > 100) {
-                    cp5.get(Textfield.class, "Steps").setText("100");
-                    time = Integer.parseInt(cp5.get(Textfield.class, "Steps").getText());
-                }
-            }
-        })
+                .onLeave(new CallbackListener() {
+                    @Override
+                    public void controlEvent(CallbackEvent callbackEvent) {
+                        if (Objects.equals(cp5.get(Textfield.class, "Steps").getText(), "")) {
+                            steps = 50;
+                            cp5.get(Textfield.class, "Steps").setText("50");
+                        }
+
+                        if (Integer.parseInt(cp5.get(Textfield.class, "Steps").getText()) > 1000 ||
+                                Integer.parseInt(cp5.get(Textfield.class, "Steps").getText()) < 0) {
+                            steps = 50;
+                            cp5.get(Textfield.class, "Steps").setText("50");
+                        }
+                    }
+                })
+        ;
+
+        cp5.addTextfield("Animation delay")
+                .setText("0.5")
+                .setPosition(20, 560)
+                .setSize(150, 25)
+                .setFont(font)
+                .setColor(color(255, 255, 255))
+                .onLeave(new CallbackListener() {
+                    @Override
+                    public void controlEvent(CallbackEvent callbackEvent) {
+                        if (Objects.equals(cp5.get(Textfield.class, "Animation delay").getText(), "")) {
+                            STEP_FREQUENCY = 0.5;
+                            cp5.get(Textfield.class, "Animation delay").setText("0.5");
+                        }
+
+                        if (Double.parseDouble(cp5.get(Textfield.class, "Animation delay").getText()) > 0.99 ||
+                                Double.parseDouble(cp5.get(Textfield.class, "Animation delay").getText()) < 0.01) {
+                            STEP_FREQUENCY = 0.5;
+                            cp5.get(Textfield.class, "Animation delay").setText("0.5");
+                        }
+                    }
+                })
         ;
 
         List<Integer> colors = gradient.getColors();
@@ -227,8 +276,8 @@ public class ConeTC extends PApplet {
                     .setColor(color(255, 255, 255));
         }
 
-        Button btStartAnimation = cp5.addButton("Calculate")
-                .setPosition(300, 610)
+        Button btStartAnimation = cp5.addButton("Start animation")
+                .setPosition(300, 515)
                 .setSize(150, 30)
                 .addListener(new ControlListener() {
                     @Override
@@ -260,14 +309,14 @@ public class ConeTC extends PApplet {
         cp5.get(Textfield.class, "Top radius").setText("100");
         cp5.get(Textfield.class, "Height").setText("300");
         cp5.get(Textfield.class, "Density").setText("1500");
-        cp5.get(Textfield.class, "Specific Heat Capacity").setText("1500");
+
         cp5.get(Textfield.class, "Specific Heat Capacity").setText("750");
         cp5.get(Textfield.class, "Conductivity coefficient").setText("0.7");
         cp5.get(Textfield.class, "Initial temperature").setText("20");
-        cp5.get(Textfield.class, "Initial temperature").setText("20");
-        cp5.get(Textfield.class, "Border temperature").setText("50");
-        cp5.get(Textfield.class, "Time").setText("30");
+        cp5.get(Textfield.class, "Border temperature").setText("200");
+        cp5.get(Textfield.class, "Time").setText("300");
         cp5.get(Textfield.class, "Steps").setText("10");
+        cp5.get(Textfield.class, "Animation delay").setText("0.5");
         if (temperatureField != null) {
             started = false;
             currentTime = 0;
@@ -339,10 +388,13 @@ public class ConeTC extends PApplet {
                 50
         );
     }
+
     @Override
     public void draw() {
         double deltaTime = 1.0 / frameRate;
         if (started) {
+            cp5.get(Button.class, "Start animation").setColor(ControlP5.THEME_RED);
+            cp5.get(Button.class, "Start animation").setLabel("ANIMATION IN PROCESS");
             timer -= deltaTime;
             if (timer < 0) {
                 calculate();
@@ -352,6 +404,8 @@ public class ConeTC extends PApplet {
                 cp5.get(Textfield.class, "Steps").setText(Integer.toString(steps));
                 if (steps <= 0) {
                     started = false;
+                    cp5.get(Button.class, "Start animation").setColor(ControlP5.THEME_CP5BLUE);
+                    cp5.get(Button.class, "Start animation").setLabel("Start animation");
                     currentTime = 0;
                 }
             }
@@ -368,6 +422,7 @@ public class ConeTC extends PApplet {
             Th = Double.parseDouble(cp5.get(Textfield.class, "Border temperature").getText());
             time = Double.parseDouble(cp5.get(Textfield.class, "Time").getText());
             steps = Integer.parseInt(cp5.get(Textfield.class, "Steps").getText());
+            STEP_FREQUENCY = Double.parseDouble(cp5.get(Textfield.class, "Animation delay").getText());
 
         } catch (NumberFormatException e) {
 
