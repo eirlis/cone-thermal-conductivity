@@ -6,9 +6,11 @@ import org.bitbucket.eirlis.conetc.core.TwoDimensionProblemSolver;
 import org.bitbucket.eirlis.conetc.managers.PositionManager;
 import org.bitbucket.eirlis.conetc.render.FigureRenderer;
 import org.bitbucket.eirlis.conetc.render.Gradient;
+import org.bitbucket.eirlis.conetc.render.ThermalCylinder;
 import org.omg.CORBA.DoubleHolder;
 import processing.core.PApplet;
 import processing.core.PFont;
+import processing.core.PImage;
 import processing.event.KeyEvent;
 import processing.event.MouseEvent;
 import sun.font.TextLabel;
@@ -29,6 +31,7 @@ public class ConeTC extends PApplet {
     private FigureRenderer mFigureRenderer = new FigureRenderer(this);
     private TwoDimensionProblemSolver mThermalProblemSolver = new TwoDimensionProblemSolver(NR, NZ);
     private Gradient gradient = new Gradient(this);
+    private ThermalCylinder thermalCylinder;
 
     double[][] temperatureField;
     private int bottomRadius = 100;
@@ -185,6 +188,14 @@ public class ConeTC extends PApplet {
                                 time
                         );
                         updateGradient();
+                        thermalCylinder = new ThermalCylinder(
+                                bottomRadius,
+                                coneHeight,
+                                temperatureField,
+                                gradient,
+                                ConeTC.this,
+                                50
+                        );
                     }
                 });
 
@@ -252,8 +263,8 @@ public class ConeTC extends PApplet {
             mFigureRenderer.cylinder(bottomRadius, topRadius, coneHeight, 40);
         } else {
             // mFigureRenderer.textureCylinder(bottomRadius, coneHeight, loadImage("kotik.png"), 40);
-            drawTemperatureCylinder();
-            noLoop();
+            // drawTemperatureCylinder();
+            thermalCylinder.draw();
         }
         popMatrix();
     }
