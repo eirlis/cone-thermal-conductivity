@@ -138,7 +138,7 @@ public class ConeTC extends PApplet {
                         }
 
                         if (Integer.parseInt(cp5.get(Textfield.class, "Height").getText()) > 400 ||
-                            Integer.parseInt(cp5.get(Textfield.class, "Height").getText()) < 50) {
+                                Integer.parseInt(cp5.get(Textfield.class, "Height").getText()) < 50) {
                             height = 200;
                             cp5.get(Textfield.class, "Height").setText("400");
                         }
@@ -229,12 +229,6 @@ public class ConeTC extends PApplet {
                 .setFont(font)
                 .setInputFilter(ControlP5.INTEGER)
                 .setColor(color(255, 255, 255))
-                .addListener(new ControlListener() {
-                    @Override
-                    public void controlEvent(ControlEvent controlEvent) {
-                        System.out.println(".!.");
-                    }
-                })
                 .onLeave(new CallbackListener() {
                     @Override
                     public void controlEvent(CallbackEvent callbackEvent) {
@@ -243,7 +237,7 @@ public class ConeTC extends PApplet {
                             cp5.get(Textfield.class, "Steps").setText("50");
                         }
 
-                        if (Integer.parseInt(cp5.get(Textfield.class, "Steps").getText()) > 1000 ||
+                        if (Integer.parseInt(cp5.get(Textfield.class, "Steps").getText()) > 999 ||
                                 Integer.parseInt(cp5.get(Textfield.class, "Steps").getText()) < 0) {
                             steps = 50;
                             cp5.get(Textfield.class, "Steps").setText("50");
@@ -255,7 +249,7 @@ public class ConeTC extends PApplet {
         cp5.addTextfield("Animation delay")
                 .setText("0.5")
                 .setPosition(20, 560)
-                .setSize(150, 25)
+                .setSize(200, 25)
                 .setFont(font)
                 .setInputFilter(ControlP5.FLOAT)
                 .setColor(color(255, 255, 255))
@@ -276,6 +270,54 @@ public class ConeTC extends PApplet {
                 })
         ;
 
+        cp5.addTextfield("Min legend temperature")
+                .setText("0")
+                .setPosition(20, 605)
+                .setSize(200, 25)
+                .setFont(font)
+                .setInputFilter(ControlP5.FLOAT)
+                .setColor(color(255, 255, 255))
+                .onLeave(new CallbackListener() {
+                    @Override
+                    public void controlEvent(CallbackEvent callbackEvent) {
+                        if (Objects.equals(cp5.get(Textfield.class, "Min legend temperature").getText(), "")) {
+                            MIN_TEMPERATURE = 0;
+                            cp5.get(Textfield.class, "Min legend temperature").setText("0");
+                        }
+
+                        if (Double.parseDouble(cp5.get(Textfield.class, "Min legend temperature").getText()) > 10000 ||
+                                Double.parseDouble(cp5.get(Textfield.class, "Min legend temperature").getText()) < 0) {
+                            MIN_TEMPERATURE = 0;
+                            cp5.get(Textfield.class, "Animation delay").setText("0");
+                        }
+                    }
+                })
+        ;
+
+        cp5.addTextfield("Max legend temperature")
+                .setText("500")
+                .setPosition(20, 650)
+                .setSize(200, 25)
+                .setFont(font)
+                .setInputFilter(ControlP5.FLOAT)
+                .setColor(color(255, 255, 255))
+                .onLeave(new CallbackListener() {
+                    @Override
+                    public void controlEvent(CallbackEvent callbackEvent) {
+                        if (Objects.equals(cp5.get(Textfield.class, "Max legend temperature").getText(), "")) {
+                            MAX_TEMPERATURE = 500;
+                            cp5.get(Textfield.class, "Max legend temperature").setText("500");
+                        }
+
+                        if (Double.parseDouble(cp5.get(Textfield.class, "Max legend temperature").getText()) > 100000 ||
+                                Double.parseDouble(cp5.get(Textfield.class, "Max legend temperature").getText()) < 0) {
+                            MAX_TEMPERATURE = 500;
+                            cp5.get(Textfield.class, "Animation delay").setText("500");
+                        }
+                    }
+                })
+        ;
+
         List<Integer> colors = gradient.getColors();
         for (int i = 0; i < colors.size(); i++) {
             cp5.addLabel("Color" + i)
@@ -288,7 +330,7 @@ public class ConeTC extends PApplet {
 
         Button btStartAnimation = cp5.addButton("Start animation")
                 .setPosition(300, 515)
-                .setSize(150, 30)
+                .setSize(300, 60)
                 .addListener(new ControlListener() {
                     @Override
                     public void controlEvent(ControlEvent controlEvent) {
@@ -297,15 +339,14 @@ public class ConeTC extends PApplet {
                 });
 
         Button btReset = cp5.addButton("Reset data")
-                .setPosition(300, 640)
-                .setSize(200, 30);
+                .setPosition(300, 600)
+                .setSize(300, 30);
 
         btReset.addCallback(new CallbackListener() {
             @Override
             public void controlEvent(CallbackEvent callbackEvent) {
                 if (callbackEvent.getAction() == ControlP5.ACTION_PRESS) {
                     resetToDefaults();
-                    btStartAnimation.setColor(ControlP5.THEME_GREY);
 
                 }
             }
@@ -326,12 +367,14 @@ public class ConeTC extends PApplet {
         cp5.get(Textfield.class, "Time").setText("300");
         cp5.get(Textfield.class, "Steps").setText("10");
         cp5.get(Textfield.class, "Animation delay").setText("0.5");
+        cp5.get(Textfield.class, "Min legend temperature").setText("0");
+        cp5.get(Textfield.class, "Max legend temperature").setText("500");
 
 
         if (temperatureField != null) {
             stopDraw();
 
-            cp5.get(Textfield.class, "Border temperature").unlock();
+            cp5.get(Textfield.class, "Initial temperature").unlock();
             temperatureField = null;
         }
 
@@ -415,6 +458,8 @@ public class ConeTC extends PApplet {
         cp5.get(Textfield.class, "Border temperature").lock();
         cp5.get(Textfield.class, "Time").lock();
         cp5.get(Textfield.class, "Steps").lock();
+        cp5.get(Textfield.class, "Max legend temperature").lock();
+        cp5.get(Textfield.class, "Min legend temperature").lock();
     }
 
     private void stopDraw() {
@@ -430,10 +475,13 @@ public class ConeTC extends PApplet {
 
         cp5.get(Textfield.class, "Specific Heat Capacity").unlock();
         cp5.get(Textfield.class, "Conductivity coefficient").unlock();
-        cp5.get(Textfield.class, "Initial temperature").unlock();
+        cp5.get(Textfield.class, "Border temperature").unlock();
         cp5.get(Textfield.class, "Time").unlock();
         cp5.get(Textfield.class, "Steps").unlock();
+        cp5.get(Textfield.class, "Max legend temperature").unlock();
+        cp5.get(Textfield.class, "Min legend temperature").unlock();
     }
+
     @Override
     public void draw() {
         double deltaTime = 1.0 / frameRate;
@@ -465,6 +513,8 @@ public class ConeTC extends PApplet {
             time = Double.parseDouble(cp5.get(Textfield.class, "Time").getText());
             steps = Integer.parseInt(cp5.get(Textfield.class, "Steps").getText());
             stepFrequency = Double.parseDouble(cp5.get(Textfield.class, "Animation delay").getText());
+            MAX_TEMPERATURE = Double.parseDouble(cp5.get(Textfield.class, "Max legend temperature").getText());
+            MIN_TEMPERATURE = Double.parseDouble(cp5.get(Textfield.class, "Min legend temperature").getText());
 
         } catch (NumberFormatException e) {
 
